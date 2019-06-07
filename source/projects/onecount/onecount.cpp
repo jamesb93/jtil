@@ -1,7 +1,7 @@
 #include "c74_min.h"
 
 using namespace c74::min;
-int memory = 0;
+
 class onecount : public object<onecount> {
 public:
 	MIN_DESCRIPTION	{ "Counts to the n-1 once." };
@@ -39,6 +39,8 @@ public:
 			return {};
 		}
 	};
+private:
+	int memory = 0;
 };
 
 MIN_EXTERNAL(onecount);
