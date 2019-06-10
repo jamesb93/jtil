@@ -80,7 +80,7 @@ public:
 				}
 			}
 			else {
-				cout << "Not a valid buffer~" << endl;    // post to the max console
+				cerr << "Not a valid buffer~" << endl;    // post to the max console
 			}
 			return {};
 		}
