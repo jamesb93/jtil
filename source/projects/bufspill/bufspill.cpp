@@ -50,8 +50,8 @@ public:
 			buffer_lock<true> b(buffer); // Lock the buffer
 			if (b.valid()) { // If the buffer is valid
 				// // Parameter Processing
-				int num_chans;
-				int num_frames;
+				number num_chans;
+				number num_frames;
 				
 				// Number of Channels to Process
 				if (numchans == -1)
@@ -64,16 +64,15 @@ public:
 					num_frames = b.frame_count();
 				else
 					num_frames = numframes;
-				int number_of_frames = 10;
 				
 
 				// Array of atoms to be output as the list
 				atoms values(num_frames + 1);
 				// Loop over the channels
-				for (int i = startchan; i < num_chans; i++) {
+				for (long i = startchan; i < num_chans; i++) {
 					// Loop over the samples
 					values[0] = i+1;
-					for (int j = 0; j < num_frames; j++) {
+					for (long j = 0; j < num_frames; j++) {
 						values[j+1] = b.lookup(j + startframe, i);
 					}
 					list_out.send(values);
