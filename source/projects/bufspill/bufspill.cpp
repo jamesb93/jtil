@@ -13,7 +13,7 @@ public:
 
     inlet<>  process		{ this, "(bang) Bang to process the buffer."};
 	outlet<> list_out		{ this, "(list) Requested indices from buffer~" };
-	outlet<> changed 		{ this, "(symbol) Changes to buffer~."};
+	outlet<> done 			{ this, "(bang) Operation completed."};
 
 	buffer_reference buffer { this,
 		MIN_FUNCTION {
@@ -77,6 +77,7 @@ public:
 					}
 					list_out.send(values);
 				}
+				done.send(k_sym_bang);
 			}
 			else {
 				cerr << "Not a valid buffer~" << endl;    // post to the max console

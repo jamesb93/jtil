@@ -30,14 +30,14 @@
 
 	<methodlist>
 
-		<method name='reset'>
-			<digest>Resets the counter to 0</digest>
-			<description>Resets the counter to 0. </description>
-		</method>
-
 		<method name='bang'>
 			<digest>Get values from buffer as a list</digest>
 			<description>Get values from buffer as a list. </description>
+		</method>
+
+		<method name='reset'>
+			<digest>Resets the counter to 0</digest>
+			<description>Resets the counter to 0. </description>
 		</method>
 
 	</methodlist>

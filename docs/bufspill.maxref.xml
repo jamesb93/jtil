@@ -47,14 +47,9 @@
 
 	<attributelist>
 
-		<attribute name='startchan' get='1' set='1' type='long' size='1' >
-			<digest>Channel to start from</digest>
-			<description>Channel to start from. </description>
-		</attribute>
-
-		<attribute name='numchans' get='1' set='1' type='long' size='1' >
-			<digest>Number of channels to process</digest>
-			<description>Number of channels to process. </description>
+		<attribute name='source' get='1' set='1' type='symbol' size='1' >
+			<digest></digest>
+			<description></description>
 		</attribute>
 
 		<attribute name='numframes' get='1' set='1' type='long' size='1' >
@@ -62,14 +57,19 @@
 			<description>Number of samples to extract starting from the offset. </description>
 		</attribute>
 
+		<attribute name='numchans' get='1' set='1' type='long' size='1' >
+			<digest>Number of channels to process</digest>
+			<description>Number of channels to process. </description>
+		</attribute>
+
 		<attribute name='startframe' get='1' set='1' type='long' size='1' >
 			<digest>Frame to start from</digest>
 			<description>Frame to start from. </description>
 		</attribute>
 
-		<attribute name='source' get='1' set='1' type='symbol' size='1' >
-			<digest></digest>
-			<description></description>
+		<attribute name='startchan' get='1' set='1' type='long' size='1' >
+			<digest>Channel to start from</digest>
+			<description>Channel to start from. </description>
 		</attribute>
 
 	</attributelist>
