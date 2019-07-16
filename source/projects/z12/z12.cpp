@@ -1,74 +1,71 @@
 #include "c74_min.h"
-#include <string>
 #include <algorithm>
+#include <vector>
+
 
 using namespace c74::min;
 
-class convert : public object<convert> {
+class z12 : public object<z12> {
 public:
 	MIN_DESCRIPTION	{ "Implementation of the z12 algorithm." };
 	MIN_TAGS		{ "audio, sampling" };
 	MIN_AUTHOR		{ "James Bradbury" };
-	MIN_RELATED		{ "sampstoms~" };
+	MIN_RELATED		{ "z12" };
 
-    inlet<>  list_in		{ this, "(list) List of values to process."};
-	outlet<> list_out		{ this, "(list) List of processed values." };
+    inlet<>  commands	{ this, "(anything) bang or list of values to process."};
+	outlet<> index		{ this, "(number) Current output step" };
 
-	// For enum attributes you first define your enum class.
-	// The indices must start at zero and increase sequentially.
+	message<threadsafe::no> list {this, "probs", "Probabilities list.",
+		MIN_FUNCTION {
+			overflowArray.clear();
+			probArray.clear();
+			overflowArray.resize(args.size());
+			probArray.resize(args.size());
 
-	enum class modes : int { sms, mss, enum_count };
+			probSum = 0;
+			auto probs = from_atoms<std::vector<number>>(args); // vector of input values
+			for (auto& p : probs)
+				probSum += p;
+			normFactor = 1.0 / probSum;
 
-	// You then define the symbols to associate with your enum values.
-	// These will be indexed starting at zero.
-	// You must have one for each item in the actual enum.
+			for (int i = 0; i < args.size(); i++)
+				probArray[i] *= normFactor;
 
-	enum_map modes_range = {"s->ms", "ms->s"};
-
-	attribute<modes, threadsafe::no> mode {this, "mode", modes::sms, modes_range,
-		description {"The direction of conversion between samples and milliseconds."},
-	};
-
-	c74::min::function process = MIN_FUNCTION {
-		switch (mode) {
-			case modes::sms: {
-				lock lock {m_mutex};
-				auto x = from_atoms<std::vector<double>>(args);
-				atoms values(x.size());
-				double sr = c74::max::sys_getsr();
-				for (int i = 0; i < x.size(); i++)
-					values[i] = (x[i] / sr) * 1000.0;
-
-				lock.unlock();
-				list_out.send(values);
-				values.clear();
-				break;
-			}
-			case modes::mss: {
-				lock lock {m_mutex};
-				auto x = from_atoms<std::vector<double>>(args);
-				atoms values(x.size());
-				double sr = c74::max::sys_getsr();
-				for (int i = 0; i < x.size(); i++)
-					values[i] = (x[i] / 1000) * sr;
-
-				lock.unlock();
-				list_out.send(values);
-				values.clear();
-				break;
-			}
-			case modes::enum_count:
-				break;
+			return {};
 		}
-		return {};
 	};
+	message<threadsafe::no> bang {this, "bang", "Move the algo one step forward.",
+		MIN_FUNCTION {
+			if (probArray.size() < 2) {
+				cerr << "There needs to be more than 1 probability" << endl;
+				return {};
+			}
 
-	message<threadsafe::yes> list {this, "list", "Convert this list.", process};
-	message<threadsafe::yes> number {this, "number", "Convert a single number.", process};
+			maxOverflow = -std::numeric_limits<double>::infinity();
+			maxIndex = 0;
+
+			for (int i=0; i<probArray.size(); i++) {
+				overflowArray[i] += probArray[i];
+
+				if (overflowArray[i] > maxOverflow) {
+					maxOverflow = overflowArray[i];
+					maxIndex = i;
+				}
+			}
+			overflowArray[maxIndex] = overflowArray[maxIndex] - 1;
+			index.send(maxIndex + 1);
+			return {};
+		}
+		
+	};
 
 private:
-	mutex m_mutex;
-	atoms values; 
+	std::vector<number> probArray;
+	std::vector<number> overflowArray;
+	number maxOverflow = -std::numeric_limits<double>::infinity();
+	number maxIndex;
+	number probSum;
+	number normFactor;
 };
 
-MIN_EXTERNAL(convert);
+MIN_EXTERNAL(z12);
