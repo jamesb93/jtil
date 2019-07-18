@@ -4,6 +4,10 @@
 
 using namespace c74::min;
 
+// float clip(float n, float lower, float upper) {
+//   return std::max(lower, std::min(n, upper));
+// }
+
 class bufspill : public object<bufspill> {
 public:
 	MIN_DESCRIPTION	{ "Read from a buffer~." };
@@ -23,65 +27,35 @@ public:
 
 	attribute<symbol, threadsafe::no> source {this, "source",
 		description {"Name of a buffer to get values from."},
-		// getter { MIN_GETTER_FUNCTION {
-		// 	buffer.set(source);
-		// }}
-	};
-
-	attribute<int, threadsafe::no> numframes {this, "numframes", -1,
-		description {"Number of samples to extract starting from the offset."},
-	};
-
-	attribute<int, threadsafe::no> startframe {this, "startframe", 0,
-		description {"Frame to start from."},
-	};
-
-	attribute<int, threadsafe::no> numchans {this, "numchans", -1,
-		description {"Number of channels to process."},
-	};
-
-	attribute<int, threadsafe::no> startchan {this, "startchan", 0,
-		description {"Channel to start from."},
 	};
 
 	message<threadsafe::no> bang {this, "bang", "Get values from buffer as a list.",
 		MIN_FUNCTION {
-			buffer.set(source);
-			buffer_lock<true> b(buffer); // Lock the buffer
-			if (b.valid()) { // If the buffer is valid
-				// // Parameter Processing
-				number num_chans;
-				number num_frames;
-				
-				// Number of Channels to Process
-				if (numchans == -1)
-					num_chans = b.channel_count();
-				else
-					num_chans = numchans;
-				
-				// Number of frames to count
-				if (numframes == -1)
-					num_frames = b.frame_count();
-				else
-					num_frames = numframes;
-				
+            buffer.set(source);
+			buffer_lock<false> b(buffer); // Lock the buffer
+			number m_numframes = b.frame_count();
+			number m_numchans  = b.channel_count();
+			
+			// Array of atoms to be output as the list
+			atoms values(m_numframes + 1);
+			
+			// Loop over the channels
+			for (int i = 0; i < m_numchans; i++) {
+				values[0] = i+1;
 
-				// Array of atoms to be output as the list
-				atoms values(num_frames + 1);
-				// Loop over the channels
-				for (long i = startchan; i < num_chans; i++) {
-					// Loop over the samples
-					values[0] = i+1;
-					for (long j = 0; j < num_frames; j++) {
-						values[j+1] = b.lookup(j + startframe, i);
-					}
-					list_out.send(values);
+				// Loop over the samples
+				for (int j = 0; j < m_numframes; j++) {
+					values[j+1] = b.lookup(j, i);
 				}
-				done.send(k_sym_bang);
+				list_out.send(values);
 			}
-			else {
-				cerr << "Not a valid buffer~" << endl;    // post to the max console
-			}
+			done.send(k_sym_bang);
+
+			if (b.valid()) // If the buffer is valid
+				cout << " is a valid buffer~" << endl;
+			else
+				cerr << " is not a valid buffer~" << endl; 
+			
 			return {};
 		}
 	};
