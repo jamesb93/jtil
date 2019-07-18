@@ -30,14 +30,14 @@
 
 	<methodlist>
 
-		<method name='probs'>
-			<digest>Probabilities list</digest>
-			<description>Probabilities list. </description>
-		</method>
-
 		<method name='bang'>
 			<digest>Move the algo one step forward</digest>
 			<description>Move the algo one step forward. </description>
+		</method>
+
+		<method name='probs'>
+			<digest>Probabilities list</digest>
+			<description>Probabilities list. </description>
 		</method>
 
 	</methodlist>
