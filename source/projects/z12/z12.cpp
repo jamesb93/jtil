@@ -1,6 +1,7 @@
 #include "c74_min.h"
 #include <algorithm>
 #include <vector>
+#include <numeric>
 
 
 using namespace c74::min;
@@ -14,6 +15,8 @@ public:
 
     inlet<>  commands	{ this, "(anything) bang or list of values to process."};
 	outlet<> index		{ this, "(number) Current output step" };
+	outlet<> overflow   { this, "(list) The overflow or dearth output"};
+	outlet<> prob_check    { this, "fff"};
 
 	message<threadsafe::no> list {this, "probs", "Probabilities list.",
 		MIN_FUNCTION {
@@ -23,13 +26,15 @@ public:
 			probArray.resize(args.size());
 
 			probSum = 0;
-			auto probs = from_atoms<std::vector<number>>(args); // vector of input values
-			for (auto& p : probs)
-				probSum += p;
+			std::vector<double> tempProb = from_atoms<std::vector<double>>(args); // vector of input values
+
+			probSum = std::accumulate(tempProb.begin(), tempProb.end(), 0.0);
+			cout << probSum << endl;
+
 			normFactor = 1.0 / probSum;
 
 			for (int i = 0; i < args.size(); i++)
-				probArray[i] *= normFactor;
+				probArray[i] = tempProb[i] * normFactor;
 
 			return {};
 		}
@@ -52,7 +57,11 @@ public:
 					maxIndex = i;
 				}
 			}
-			overflowArray[maxIndex] = overflowArray[maxIndex] - 1;
+			atoms checker(overflowArray.size());
+			for (int i=0; i < overflowArray.size(); i++)
+				checker[i] = overflowArray[i];
+			overflow.send(checker);
+			overflowArray[maxIndex] = overflowArray[maxIndex] -  1.0;
 			index.send(maxIndex + 1);
 			return {};
 		}
@@ -60,12 +69,12 @@ public:
 	};
 
 private:
-	std::vector<number> probArray;
-	std::vector<number> overflowArray;
-	number maxOverflow = -std::numeric_limits<double>::infinity();
-	number maxIndex;
-	number probSum;
-	number normFactor;
+	std::vector<double> probArray;
+	std::vector<double> overflowArray;
+	double maxOverflow = -std::numeric_limits<double>::infinity();
+	double maxIndex;
+	double probSum;
+	double normFactor;
 };
 
 MIN_EXTERNAL(z12);
