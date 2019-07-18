@@ -27,17 +27,11 @@ public:
 
 	attribute<symbol, threadsafe::no> source {this, "source",
 		description {"Name of a buffer to get values from."},
-		setter { 
-			MIN_FUNCTION {
-				symbol name = args[0];
-				buffer.set(name);
-				return { args };
-			}
-		}
 	};
 
 	message<threadsafe::no> bang {this, "bang", "Get values from buffer as a list.",
 		MIN_FUNCTION {
+            buffer.set(source);
 			buffer_lock<false> b(buffer); // Lock the buffer
 			if (b.valid()) { // If the buffer is valid
 				number m_numframes = b.frame_count();
@@ -47,11 +41,11 @@ public:
 				atoms values(m_numframes + 1);
 				
 				// Loop over the channels
-				for (long i = 0; i < m_numchans; i++) {
+				for (int i = 0; i < m_numchans; i++) {
 					values[0] = i+1;
 
 					// Loop over the samples
-					for (long j = 0; j < m_numframes; j++) {
+					for (int j = 0; j < m_numframes; j++) {
 						values[j+1] = b.lookup(j, i);
 					}
 					list_out.send(values);
