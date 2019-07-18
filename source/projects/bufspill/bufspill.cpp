@@ -33,28 +33,29 @@ public:
 		MIN_FUNCTION {
             buffer.set(source);
 			buffer_lock<false> b(buffer); // Lock the buffer
-			if (b.valid()) { // If the buffer is valid
-				number m_numframes = b.frame_count();
-				number m_numchans  = b.channel_count();
-				
-				// Array of atoms to be output as the list
-				atoms values(m_numframes + 1);
-				
-				// Loop over the channels
-				for (int i = 0; i < m_numchans; i++) {
-					values[0] = i+1;
+			number m_numframes = b.frame_count();
+			number m_numchans  = b.channel_count();
+			
+			// Array of atoms to be output as the list
+			atoms values(m_numframes + 1);
+			
+			// Loop over the channels
+			for (int i = 0; i < m_numchans; i++) {
+				values[0] = i+1;
 
-					// Loop over the samples
-					for (int j = 0; j < m_numframes; j++) {
-						values[j+1] = b.lookup(j, i);
-					}
-					list_out.send(values);
+				// Loop over the samples
+				for (int j = 0; j < m_numframes; j++) {
+					values[j+1] = b.lookup(j, i);
 				}
-				done.send(k_sym_bang);
+				list_out.send(values);
 			}
-			else {
-				cerr << "Not a valid buffer~" << endl;    // post to the max console
-			}
+			done.send(k_sym_bang);
+
+			if (b.valid()) // If the buffer is valid
+				cout << " is a valid buffer~" << endl;
+			else
+				cerr << " is not a valid buffer~" << endl; 
+			
 			return {};
 		}
 	};
