@@ -15,8 +15,9 @@ public:
     inlet<>  commands	{ this, "(anything) bang or list of values to process."};
 	outlet<> index		{ this, "(number) Current output step" };
 
-	message<threadsafe::no> list {this, "probs", "Probabilities list.",
+	message<threadsafe::yes> list {this, "probs", "Probabilities list.",
 		MIN_FUNCTION {
+            lock lock {m_mutex};
 			overflowArray.clear();
 			probArray.clear();
 			overflowArray.resize(args.size());
@@ -32,11 +33,13 @@ public:
 			for (int i = 0; i < args.size(); i++)
 				probArray[i] = tempProb[i] * normFactor;
 
+            lock.unlock();
 			return {};
 		}
 	};
-	message<threadsafe::no> bang {this, "bang", "Move the algo one step forward.",
+	message<threadsafe::yes> bang {this, "bang", "Move the algo one step forward.",
 		MIN_FUNCTION {
+            lock lock {m_mutex};
 			if (probArray.size() < 2) {
 				cerr << "There needs to be more than 1 probability" << endl;
 				return {};
@@ -54,6 +57,7 @@ public:
 				}
 			}
 			overflowArray[maxIndex] = overflowArray[maxIndex] -  1.0;
+            lock.unlock();
 			index.send(maxIndex + 1);
 			return {};
 		}
@@ -67,6 +71,7 @@ private:
 	double maxIndex;
 	double probSum;
 	double normFactor;
+    mutex m_mutex;
 };
 
 MIN_EXTERNAL(z12);
