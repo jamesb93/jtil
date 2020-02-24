@@ -17,3 +17,5 @@ tmp
 
 package-info.json
 
+.vscode
+source/projects/z12_tilde/CMakeLists.txt
