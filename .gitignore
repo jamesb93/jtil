@@ -1,3 +1,4 @@
+*.maxref.xml
 __*
 sysbuild
 *.sdf
